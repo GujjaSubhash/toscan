@@ -44,3 +44,31 @@ trafilatura · slowapi
 - P1: Seed demos against live Groq once key + DB provided.
 - P2: Add pytest suite with mocked Groq for CI.
 - P2: Frontend UI for the analyzer.
+
+---
+
+## Frontend (2026-06)
+React 19 + TypeScript (CRA + craco), Tailwind, Framer Motion, axios, React Router 7.
+Design system implemented exactly: Inter/Sora/JetBrains Mono, #0A0A0F bg, #111118 glass
+cards, #6366F1 accent, risk colors green/amber/red, blur(12px) glass, 200ms ease-out
+transitions, skeleton shimmer (no spinners), mobile responsive.
+
+Pages:
+- `/` Landing — hero, URL/raw-text toggle, Analyze Now, 3 feature cards, 3 demo cards, footer.
+- `/loading` — full-page skeleton shimmer + progress bar + status messages cycling every 2s;
+  performs the analyze/demo call then routes to results; error card on failure.
+- `/results/:documentId` — fetches GET /api/document/:id; 60% left clause panel (JetBrains Mono,
+  risk-color 15% tint, clickable), 40% sticky right panel (summary card w/ overall score,
+  high-risk count, category breakdown bars; switches to clause detail on click), top bar
+  (title, date, Share=copy URL, Download PDF placeholder), category filter chips,
+  Framer Motion layoutId clause animation.
+
+Files: src/App.tsx, src/index.tsx, src/index.css, src/lib/api.ts, src/lib/risk.ts,
+src/pages/{Landing,Loading,Results}.tsx, tsconfig.json.
+
+Backend contract wired: POST /api/analyze, GET /api/document/:id,
+GET /api/demo/clause-risk-engine?slug= (real backend route). REACT_APP_BACKEND_URL used for all calls.
+
+NOTE: Loading/Results not visually verified live in preview — requires the standalone backend
+(Postgres+Redis+GROQ_API_KEY) running per backend/README.md. Landing verified via screenshot;
+TypeScript type-check clean.
