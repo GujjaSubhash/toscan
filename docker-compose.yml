@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: claritytos-postgres
+    environment:
+      POSTGRES_USER: clarity
+      POSTGRES_PASSWORD: clarity
+      POSTGRES_DB: claritytos
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - claritytos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clarity -d claritytos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: claritytos-redis
+    networks:
+      - claritytos
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: claritytos-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://clarity:clarity@postgres:5432/claritytos
+      REDIS_URL: redis://redis:6379/0
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_MODEL: llama-3.1-70b-versatile
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - claritytos
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:8000
+    container_name: claritytos-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - claritytos
+
+networks:
+  claritytos:
+    driver: bridge
+
+volumes:
+  pgdata:

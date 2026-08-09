@@ -72,3 +72,16 @@ GET /api/demo/clause-risk-engine?slug= (real backend route). REACT_APP_BACKEND_U
 NOTE: Loading/Results not visually verified live in preview — requires the standalone backend
 (Postgres+Redis+GROQ_API_KEY) running per backend/README.md. Landing verified via screenshot;
 TypeScript type-check clean.
+
+---
+
+## Deployment phase (2026-06)
+Added root deployment files (backend/frontend untouched):
+- `docker-compose.yml` — postgres:15 + redis:7 (healthchecks) + backend (builds backend/Dockerfile, :8000, waits for db+redis healthy) + frontend (builds frontend/Dockerfile, :3000, REACT_APP_BACKEND_URL build arg) on one bridge network `claritytos`; pgdata volume.
+- `railway.json` — DOCKERFILE builder (backend/Dockerfile), startCommand runs alembic + uvicorn on $PORT, healthcheck /api/health.
+- `Procfile` — `web: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}`.
+- `frontend/Dockerfile` + `frontend/.dockerignore`, `backend/.dockerignore` (deployment artifacts only).
+- Root `README.md` — description, problem statement, 9-category table, eval metrics placeholders, docker-compose setup, Railway steps, all API endpoints.
+Confirmed item 4: frontend/src/lib/api.ts uses process.env.REACT_APP_BACKEND_URL → `${REACT_APP_BACKEND_URL}/api`.
+Validated: railway.json valid JSON, docker-compose.yml valid YAML. Docker daemon not available in this container, so `docker compose up` not executed here.
+Final structure clean: /app/{backend,frontend,docker-compose.yml,railway.json,Procfile,README.md}.
