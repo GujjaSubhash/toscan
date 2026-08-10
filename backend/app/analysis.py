@@ -49,7 +49,7 @@ async def _analyze_all(clause_texts: list[str]) -> list[ClauseAnalysis]:
             async with semaphore:
                 return await analyze_clause(client, text)
 
-       return await asyncio.gather(*[_one(t) for t in clause_texts[:20]])
+        return await asyncio.gather(*[_one(t) for t in clause_texts[:20]])
 
 
 async def get_document(session: AsyncSession, document_id: uuid.UUID) -> Document | None:
@@ -89,7 +89,6 @@ async def analyze(
         if existing:
             return existing
 
-    # Also reuse if already stored (unique content_hash) even without cache entry.
     existing_row = await session.execute(
         select(Document).where(Document.content_hash == content_hash)
     )
