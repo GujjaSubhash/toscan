@@ -19,7 +19,7 @@ async def analyze_clause(client: httpx.AsyncClient, clause_text: str) -> ClauseA
         "model": GROQ_MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": clause_text},
+            {"role": "user", "content": clause_text[:1000]},,
         ],
         "temperature": 0,
         "response_format": {"type": "json_object"},
